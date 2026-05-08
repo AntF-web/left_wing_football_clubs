@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Left-Wing / Independent Football Clubs Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --bg: #08111f;
+      --panel: rgba(10, 18, 32, 0.84);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --left: #f43f5e;
+      --community: #2dd4bf;
+      --fan: #a78bfa;
+      --people: #fbbf24;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+      background: #08111f;
+      filter: saturate(0.82) contrast(1.08);
+      z-index: 0;
+    }
+
+    .leaflet-control-attribution { display: none; }
+
+    .panel {
+      position: absolute;
+      z-index: 1000;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(16px);
+    }
+
+    .header {
+      top: 16px;
+      left: 16px;
+      width: 320px;
+      max-width: calc(100vw - 32px);
+      padding: 14px 16px;
+      border-radius: 18px;
+      opacity: .93;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 2.6vw, 30px);
+      line-height: 1;
+      letter-spacing: -0.055em;
+    }
+
+    .small {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+    }
+
+    .club-card {
+      right: 18px;
+      bottom: 92px;
+      width: 340px;
+      max-height: 42vh;
+      overflow: auto;
+      padding: 16px;
+      border-radius: 22px;
+      opacity: .94;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(244,63,94,.16);
+      color: #fecdd3;
+      font-weight: 900;
+      font-size: 10px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .club-title {
+      margin: 12px 0 7px;
+      font-size: 24px;
+      line-height: 1.05;
+      letter-spacing: -0.045em;
+    }
+
+    .location {
+      margin: 0;
+      color: #dbeafe;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .description {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .filter-panel {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 18px;
+      width: min(760px, 92vw);
+      padding: 12px;
+      border-radius: 999px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar { display: none; }
+
+    button {
+      height: 40px;
+      white-space: nowrap;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.10);
+      color: white;
+      cursor: pointer;
+      transition: transform .2s, background .2s;
+      font-weight: 900;
+      font-size: 12px;
+      padding: 0 13px;
+    }
+
+    button:hover,
+    button.active {
+      background: rgba(255,255,255,.18);
+      transform: scale(1.03);
+    }
+
+    .club-label {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(8, 17, 31, .82);
+      border: 1px solid rgba(255,255,255,.13);
+      color: #f8fafc;
+      font-size: 11px;
+      font-weight: 800;
+      box-shadow: 0 6px 22px rgba(0,0,0,.28);
+      white-space: nowrap;
+    }
+
+    .node {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 0 0 8px rgba(255,255,255,.08), 0 0 24px currentColor;
+      cursor: pointer;
+    }
+
+    .left { background: var(--left); color: var(--left); }
+    .community { background: var(--community); color: var(--community); }
+    .fan { background: var(--fan); color: var(--fan); }
+    .people { background: var(--people); color: var(--people); }
+
+    .active-node { animation: pulse 1.45s ease-in-out infinite; }
+    .hidden-marker { opacity: .16; filter: grayscale(1); }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.45); }
+    }
+
+    .hover-preview {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(8,17,31,.95);
+      color: white;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 10px 34px rgba(0,0,0,.36);
+      min-width: 190px;
+    }
+
+    .hover-preview strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .hover-preview span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: rgba(8,17,31,.94);
+      color: white;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+    }
+
+    .leaflet-popup-content {
+      margin: 12px 14px;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 1024px) {
+      .header { width: 285px; }
+      .club-card { width: 310px; }
+    }
+
+    @media (max-width: 760px) {
+      #map { height: 100dvh; }
+
+      .header {
+        top: max(10px, env(safe-area-inset-top));
+        left: 10px;
+        width: min(250px, calc(100vw - 20px));
+        padding: 11px 13px;
+        border-radius: 18px;
+        opacity: .88;
+      }
+
+      h1 { font-size: 17px; }
+      .small { display: none; }
+
+      .legend {
+        margin-top: 8px;
+        gap: 7px 9px;
+        font-size: 10px;
+      }
+
+      .legend-dot { width: 8px; height: 8px; }
+
+      .club-card {
+        left: 10px;
+        right: 10px;
+        bottom: calc(76px + env(safe-area-inset-bottom));
+        width: auto;
+        max-height: 30dvh;
+        padding: 13px;
+        border-radius: 20px;
+        opacity: .91;
+      }
+
+      .club-card::before {
+        content: "";
+        display: block;
+        width: 44px;
+        height: 4px;
+        margin: 0 auto 9px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.28);
+      }
+
+      .club-title {
+        margin: 9px 0 6px;
+        font-size: 19px;
+      }
+
+      .description {
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .filter-panel {
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        width: auto;
+        transform: none;
+        border-radius: 22px;
+        padding: 10px;
+      }
+
+      button {
+        height: 42px;
+        min-width: 42px;
+        font-size: 11px;
+      }
+
+      .club-label { display: none; }
+
+      .node {
+        width: 22px;
+        height: 22px;
+        box-shadow: 0 0 0 9px rgba(255,255,255,.08), 0 0 22px currentColor;
+      }
+
+      .hover-preview { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .header { width: 220px; }
+      .legend { display: none; }
+      .description { display: none; }
+      .club-card { max-height: 25dvh; }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <section class="panel header">
+    <h1>Left-Wing / Independent Football Clubs</h1>
+    <p class="small">A global map of clubs linked to anti-fascism, labor history, community ownership, fan independence, or people’s-club identity.</p>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--left)"></span>left / anti-fascist</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--fan)"></span>fan-owned</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--community)"></span>community</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--people)"></span>people’s club</div>
+    </div>
+  </section>
+
+  <section class="panel club-card" id="clubCard" aria-live="polite"></section>
+
+  <section class="panel filter-panel">
+    <div class="filters" id="filters">
+      <button class="active" data-filter="all">All clubs</button>
+      <button data-filter="left">Left / anti-fascist</button>
+      <button data-filter="fan">Fan-owned</button>
+      <button data-filter="community">Community</button>
+      <button data-filter="people">People’s clubs</button>
+    </div>
+  </section>
+
+  <script>
+    'use strict';
+
+    const isMobile = window.matchMedia('(max-width: 760px)').matches;
+
+    const clubs = [
+      { name: 'FC St. Pauli', city: 'Hamburg, Germany', coords: [53.55, 9.96], category: 'left', region: 'Europe', note: 'Probably the world’s best-known left-wing football club; associated with anti-fascism, anti-racism, punk culture, LGBTQ+ activism, and grassroots supporter politics.' },
+      { name: 'SV Babelsberg 03', city: 'Potsdam, Germany', coords: [52.39, 13.09], category: 'left', region: 'Europe', note: 'Known for a strong anti-fascist supporter scene.' },
+      { name: 'Union Berlin', city: 'Berlin, Germany', coords: [52.46, 13.57], category: 'community', region: 'Europe', note: 'Deep working-class East Berlin identity; supporters famously helped rebuild the stadium.' },
+      { name: 'Rayo Vallecano', city: 'Madrid, Spain', coords: [40.39, -3.66], category: 'left', region: 'Europe', note: 'Associated with the working-class Vallecas district and leftist supporter culture.' },
+      { name: 'Athletic Bilbao', city: 'Bilbao, Spain', coords: [43.26, -2.95], category: 'fan', region: 'Europe', note: 'Member-owned club with strong Basque identity and historical regionalist politics.' },
+      { name: 'FC Barcelona', city: 'Barcelona, Spain', coords: [41.38, 2.12], category: 'fan', region: 'Europe', note: 'Member-owned club historically linked to Catalan identity and anti-Franco resistance.' },
+      { name: 'Livorno', city: 'Livorno, Italy', coords: [43.55, 10.31], category: 'left', region: 'Europe', note: 'Famous for communist and left-wing ultras culture.' },
+      { name: 'Atalanta BC', city: 'Bergamo, Italy', coords: [45.71, 9.68], category: 'community', region: 'Europe', note: 'Mixed politics overall, though parts of supporter culture historically leaned left.' },
+      { name: 'AEK Athens', city: 'Athens, Greece', coords: [38.03, 23.74], category: 'community', region: 'Europe', note: 'Founded by Greek refugees from Constantinople; some supporter groups have anti-fascist traditions.' },
+      { name: 'Celtic F.C.', city: 'Glasgow, Scotland', coords: [55.85, -4.21], category: 'left', region: 'Europe', note: 'Irish immigrant and working-class roots; many supporters identify with republican and socialist politics.' },
+      { name: 'Beşiktaş J.K.', city: 'Istanbul, Turkey', coords: [41.04, 29.00], category: 'left', region: 'Europe / Asia', note: 'The Çarşı supporters group became known internationally for anti-authoritarian activism.' },
+      { name: 'Bohemian F.C.', city: 'Dublin, Ireland', coords: [53.36, -6.28], category: 'left', region: 'Europe', note: 'Often associated with community, anti-racist, and progressive supporter culture.' },
+      { name: 'Napoli', city: 'Naples, Italy', coords: [40.83, 14.19], category: 'people', region: 'Europe', note: 'Often seen as a people’s club with strong working-class and southern Italian identity.' },
+      { name: 'Marseille', city: 'Marseille, France', coords: [43.27, 5.39], category: 'people', region: 'Europe', note: 'Strong port-city, immigrant, working-class, and popular identity.' },
+      { name: 'Borussia Dortmund', city: 'Dortmund, Germany', coords: [51.49, 7.45], category: 'people', region: 'Europe', note: 'Often identified with worker-class Ruhr culture and mass supporter identity.' },
+      { name: 'Liverpool F.C.', city: 'Liverpool, England', coords: [53.43, -2.96], category: 'people', region: 'Europe', note: 'Strong working-class city identity and community symbolism.' },
+      { name: 'Red Star FC', city: 'Saint-Ouen, France', coords: [48.91, 2.33], category: 'left', region: 'France', note: 'Historic working-class Parisian club strongly associated with anti-fascist, anti-racist, and left-wing supporter culture.' },
+      { name: 'Olympique de Marseille', city: 'Marseille, France', coords: [43.27, 5.39], category: 'people', region: 'France', note: 'Popular port-city club associated with immigrant, working-class, and anti-establishment supporter identity.' },
+      { name: 'FC Sankt Pauli Fanclub Paris', city: 'Paris, France', coords: [48.86, 2.35], category: 'left', region: 'France', note: 'Part of wider anti-fascist football supporter networks connected to St. Pauli culture.' },
+      { name: 'Standard de Liège', city: 'Liège, Belgium', coords: [50.61, 5.57], category: 'people', region: 'Belgium', note: 'Historically linked to industrial Walloon working-class identity and strong labor-region culture.' },
+      { name: 'Union Saint-Gilloise', city: 'Brussels, Belgium', coords: [50.82, 4.32], category: 'community', region: 'Belgium', note: 'Community-rooted Brussels club with diverse urban supporter culture and anti-racist tendencies among sections of fans.' },
+      { name: 'RAEC Mons', city: 'Mons, Belgium', coords: [50.45, 3.95], category: 'community', region: 'Belgium', note: 'Historically connected to the mining and labor culture of Wallonia.' },
+
+      { name: 'FC United of Manchester', city: 'Manchester, England', coords: [53.50, -2.20], category: 'fan', region: 'United Kingdom', note: 'Founded by Manchester United supporters opposing corporate ownership after the Glazer takeover.' },
+      { name: 'AFC Wimbledon', city: 'London, England', coords: [51.43, -0.19], category: 'fan', region: 'United Kingdom', note: 'Fan-created after Wimbledon FC’s relocation; major symbol of supporter independence.' },
+      { name: 'Clapton CFC', city: 'London, England', coords: [51.55, 0.03], category: 'left', region: 'United Kingdom', note: 'Explicitly anti-fascist, anti-racist, and community-oriented.' },
+      { name: 'Lewes F.C.', city: 'Lewes, England', coords: [50.87, 0.01], category: 'community', region: 'United Kingdom', note: 'Known globally for equal budgeting between men’s and women’s football.' },
+      { name: 'Merthyr Town F.C.', city: 'Merthyr Tydfil, Wales', coords: [51.75, -3.38], category: 'community', region: 'United Kingdom', note: 'Strong labor and mining-community heritage.' },
+      { name: 'Exeter City F.C.', city: 'Exeter, England', coords: [50.73, -3.52], category: 'fan', region: 'United Kingdom', note: 'Supporter-owned club through its supporters’ trust.' },
+
+      { name: 'San Lorenzo de Almagro', city: 'Buenos Aires, Argentina', coords: [-34.64, -58.44], category: 'community', region: 'Latin America', note: 'Strong social-club tradition and major neighborhood identity.' },
+      { name: 'Argentinos Juniors', city: 'Buenos Aires, Argentina', coords: [-34.61, -58.47], category: 'left', region: 'Latin America', note: 'Historically associated with socialist/anarchist worker movements.' },
+      { name: 'Club Deportivo Palestino', city: 'Santiago, Chile', coords: [-33.47, -70.61], category: 'community', region: 'Latin America', note: 'Associated with Palestinian solidarity and diaspora identity.' },
+      { name: 'Corinthians', city: 'São Paulo, Brazil', coords: [-23.54, -46.47], category: 'left', region: 'Latin America', note: 'Known for the Corinthians Democracy movement in the 1980s under Sócrates, supporting democracy against dictatorship.' },
+
+      { name: 'Real Madrid CF', city: 'Madrid, Spain', coords: [40.45, -3.69], category: 'fan', region: 'Fan-owned', note: 'Member-owned under the socios model, though not generally considered left-wing.' },
+      { name: 'CA Osasuna', city: 'Pamplona, Spain', coords: [42.80, -1.64], category: 'fan', region: 'Fan-owned', note: 'Member-owned club.' },
+      { name: 'FC Bayern Munich', city: 'Munich, Germany', coords: [48.22, 11.62], category: 'fan', region: 'Fan-owned', note: 'Partial member-control structure; not left-wing, but important in fan/member ownership models.' }
+    ];
+
+    const categoryLabels = {
+      left: 'Left / anti-fascist',
+      fan: 'Fan-owned / independent',
+      community: 'Community / social roots',
+      people: 'People’s club identity'
+    };
+
+    const map = L.map('map', {
+      zoomControl: false,
+      worldCopyJump: true,
+      attributionControl: false,
+      tap: true,
+      dragging: true
+    }).setView(isMobile ? [25, 0] : [28, 5], isMobile ? 2 : 3);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+      pane: 'shadowPane'
+    }).addTo(map);
+
+    const card = document.getElementById('clubCard');
+    const filters = document.getElementById('filters');
+    const markers = [];
+    let hoverLabel = null;
+    let activeCategory = 'all';
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function categoryClass(category) {
+      return ['left', 'fan', 'community', 'people'].includes(category) ? category : 'community';
+    }
+
+    function renderCard(club) {
+      card.innerHTML = `
+        <span class="tag">${escapeHtml(categoryLabels[club.category] || club.category)}</span>
+        <h2 class="club-title">${escapeHtml(club.name)}</h2>
+        <p class="location">${escapeHtml(club.city)} · ${escapeHtml(club.region)}</p>
+        <p class="description">${escapeHtml(club.note)}</p>
+      `;
+    }
+
+    function clearActiveNodes() {
+      markers.forEach(({ marker }) => {
+        const el = marker.getElement();
+        if (el) el.querySelector('.node')?.classList.remove('active-node');
+      });
+    }
+
+    function selectClub(club, marker) {
+      clearActiveNodes();
+      const el = marker.getElement();
+      if (el) el.querySelector('.node')?.classList.add('active-node');
+      renderCard(club);
+      map.flyTo(club.coords, isMobile ? 5 : 6, { duration: .8 });
+    }
+
+    function showHover(club) {
+      clearHover();
+      hoverLabel = L.marker(club.coords, {
+        icon: L.divIcon({
+          className: '',
+          html: `<div class="hover-preview"><strong>${escapeHtml(club.name)}</strong><span>${escapeHtml(categoryLabels[club.category] || club.category)}</span><span>${escapeHtml(club.city)}</span></div>`,
+          iconSize: [220, 86],
+          iconAnchor: [110, 98]
+        }),
+        interactive: false
+      }).addTo(map);
+    }
+
+    function clearHover() {
+      if (hoverLabel) {
+        map.removeLayer(hoverLabel);
+        hoverLabel = null;
+      }
+    }
+
+    function applyFilter(category) {
+      activeCategory = category;
+      filters.querySelectorAll('button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === category);
+      });
+
+      const visible = [];
+
+      markers.forEach(({ club, marker, label }) => {
+        const show = category === 'all' || club.category === category;
+        const markerEl = marker.getElement();
+        const labelEl = label.getElement();
+
+        if (markerEl) markerEl.classList.toggle('hidden-marker', !show);
+        if (labelEl) labelEl.classList.toggle('hidden-marker', !show);
+
+        if (show) visible.push(club.coords);
+      });
+
+      if (visible.length > 1) {
+        map.fitBounds(visible, { padding: isMobile ? [52, 52] : [90, 90], maxZoom: isMobile ? 4 : 5 });
+      }
+    }
+
+    function createMarker(club) {
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="node ${categoryClass(club.category)}"></div>`,
+        iconSize: isMobile ? [22, 22] : [19, 19],
+        iconAnchor: isMobile ? [11, 11] : [9, 9]
+      });
+
+      const labelIcon = L.divIcon({
+        className: '',
+        html: `<div class="club-label">${escapeHtml(club.name)}</div>`,
+        iconSize: [110, 26],
+        iconAnchor: [55, -12]
+      });
+
+      const marker = L.marker(club.coords, { icon }).addTo(map);
+      const label = L.marker(club.coords, { icon: labelIcon, interactive: false }).addTo(map);
+
+      marker.bindPopup(`<strong>${escapeHtml(club.name)}</strong><br>${escapeHtml(club.city)}<br>${escapeHtml(categoryLabels[club.category] || club.category)}`);
+      marker.on('click', () => selectClub(club, marker));
+
+      if (!isMobile) {
+        marker.on('mouseover', () => showHover(club));
+        marker.on('mouseout', clearHover);
+      }
+
+      markers.push({ club, marker, label });
+    }
+
+    clubs.forEach(createMarker);
+
+    filters.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-filter]');
+      if (!btn) return;
+      applyFilter(btn.dataset.filter);
+    });
+
+    function runDataTests() {
+      console.group('Football map data tests');
+      console.assert(clubs.length > 10, 'Expected a useful list of clubs');
+      clubs.forEach((club, i) => {
+        console.assert(club.name && club.city && Array.isArray(club.coords), `Club ${i} should have name/city/coords`, club);
+        console.assert(['left', 'fan', 'community', 'people'].includes(club.category), `Club ${i} has valid category`, club);
+      });
+      console.groupEnd();
+    }
+
+    runDataTests();
+    renderCard(clubs[0]);
+    applyFilter('all');
+  </script>
+</body>
+</html>

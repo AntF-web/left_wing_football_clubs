@@ -64,6 +64,7 @@
       font-size: clamp(20px, 2.6vw, 30px);
       line-height: 1;
       letter-spacing: -0.055em;
+      padding-right: 86px;
     }
 
     .small {
@@ -72,6 +73,51 @@
       font-size: 12px;
       line-height: 1.35;
     }
+
+    .lang-switch {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+      user-select: none;
+    }
+
+    .lang-switch span {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      color: #cbd5e1;
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.12);
+      cursor: pointer;
+      transition: background .25s ease;
+    }
+
+    .switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 3px 10px rgba(0,0,0,.3);
+      transition: transform .25s ease;
+    }
+
+    .switch.active { background: rgba(244,63,94,.45); }
+    .switch.active::after { transform: translateX(22px); }
 
     .legend {
       display: flex;
@@ -82,17 +128,8 @@
       color: #cbd5e1;
     }
 
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .legend-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 999px; }
 
     .club-card {
       right: 18px;
@@ -260,21 +297,15 @@
       .header {
         top: max(10px, env(safe-area-inset-top));
         left: 10px;
-        width: min(250px, calc(100vw - 20px));
+        width: min(260px, calc(100vw - 20px));
         padding: 11px 13px;
         border-radius: 18px;
         opacity: .88;
       }
 
-      h1 { font-size: 17px; }
+      h1 { font-size: 17px; padding-right: 82px; }
       .small { display: none; }
-
-      .legend {
-        margin-top: 8px;
-        gap: 7px 9px;
-        font-size: 10px;
-      }
-
+      .legend { margin-top: 8px; gap: 7px 9px; font-size: 10px; }
       .legend-dot { width: 8px; height: 8px; }
 
       .club-card {
@@ -298,15 +329,8 @@
         background: rgba(255,255,255,.28);
       }
 
-      .club-title {
-        margin: 9px 0 6px;
-        font-size: 19px;
-      }
-
-      .description {
-        font-size: 12px;
-        line-height: 1.35;
-      }
+      .club-title { margin: 9px 0 6px; font-size: 19px; }
+      .description { font-size: 12px; line-height: 1.35; }
 
       .filter-panel {
         left: 10px;
@@ -318,12 +342,7 @@
         padding: 10px;
       }
 
-      button {
-        height: 42px;
-        min-width: 42px;
-        font-size: 11px;
-      }
-
+      button { height: 42px; min-width: 42px; font-size: 11px; }
       .club-label { display: none; }
 
       .node {
@@ -336,7 +355,7 @@
     }
 
     @media (max-width: 480px) {
-      .header { width: 220px; }
+      .header { width: 230px; }
       .legend { display: none; }
       .description { display: none; }
       .club-card { max-height: 25dvh; }
@@ -347,13 +366,20 @@
   <div id="map"></div>
 
   <section class="panel header">
-    <h1>Left-Wing / Independent Football Clubs</h1>
-    <p class="small">A global map of clubs linked to anti-fascism, labor history, community ownership, fan independence, or people’s-club identity.</p>
+    <h1 data-i18n="title">Left-Wing / Independent Football Clubs</h1>
+    <p class="small" data-i18n="subtitle">A global map of clubs linked to anti-fascism, labor history, community ownership, fan independence, or people’s-club identity.</p>
+
+    <div class="lang-switch">
+      <span>EN</span>
+      <div id="langToggle" class="switch" aria-label="Switch language" role="switch" aria-checked="false" tabindex="0"></div>
+      <span>FR</span>
+    </div>
+
     <div class="legend">
-      <div class="legend-item"><span class="legend-dot" style="background:var(--left)"></span>left / anti-fascist</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--fan)"></span>fan-owned</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--community)"></span>community</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--people)"></span>people’s club</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--left)"></span><span data-i18n="legendLeft">left / anti-fascist</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--fan)"></span><span data-i18n="legendFan">fan-owned</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--community)"></span><span data-i18n="legendCommunity">community</span></div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--people)"></span><span data-i18n="legendPeople">people’s club</span></div>
     </div>
   </section>
 
@@ -361,11 +387,11 @@
 
   <section class="panel filter-panel">
     <div class="filters" id="filters">
-      <button class="active" data-filter="all">All clubs</button>
-      <button data-filter="left">Left / anti-fascist</button>
-      <button data-filter="fan">Fan-owned</button>
-      <button data-filter="community">Community</button>
-      <button data-filter="people">People’s clubs</button>
+      <button class="active" data-filter="all" data-i18n="filterAll">All clubs</button>
+      <button data-filter="left" data-i18n="filterLeft">Left / anti-fascist</button>
+      <button data-filter="fan" data-i18n="filterFan">Fan-owned</button>
+      <button data-filter="community" data-i18n="filterCommunity">Community</button>
+      <button data-filter="people" data-i18n="filterPeople">People’s clubs</button>
     </div>
   </section>
 
@@ -374,53 +400,82 @@
 
     const isMobile = window.matchMedia('(max-width: 760px)').matches;
 
-    const clubs = [
-      { name: 'FC St. Pauli', city: 'Hamburg, Germany', coords: [53.55, 9.96], category: 'left', region: 'Europe', note: 'Probably the world’s best-known left-wing football club; associated with anti-fascism, anti-racism, punk culture, LGBTQ+ activism, and grassroots supporter politics.' },
-      { name: 'SV Babelsberg 03', city: 'Potsdam, Germany', coords: [52.39, 13.09], category: 'left', region: 'Europe', note: 'Known for a strong anti-fascist supporter scene.' },
-      { name: 'Union Berlin', city: 'Berlin, Germany', coords: [52.46, 13.57], category: 'community', region: 'Europe', note: 'Deep working-class East Berlin identity; supporters famously helped rebuild the stadium.' },
-      { name: 'Rayo Vallecano', city: 'Madrid, Spain', coords: [40.39, -3.66], category: 'left', region: 'Europe', note: 'Associated with the working-class Vallecas district and leftist supporter culture.' },
-      { name: 'Athletic Bilbao', city: 'Bilbao, Spain', coords: [43.26, -2.95], category: 'fan', region: 'Europe', note: 'Member-owned club with strong Basque identity and historical regionalist politics.' },
-      { name: 'FC Barcelona', city: 'Barcelona, Spain', coords: [41.38, 2.12], category: 'fan', region: 'Europe', note: 'Member-owned club historically linked to Catalan identity and anti-Franco resistance.' },
-      { name: 'Livorno', city: 'Livorno, Italy', coords: [43.55, 10.31], category: 'left', region: 'Europe', note: 'Famous for communist and left-wing ultras culture.' },
-      { name: 'Atalanta BC', city: 'Bergamo, Italy', coords: [45.71, 9.68], category: 'community', region: 'Europe', note: 'Mixed politics overall, though parts of supporter culture historically leaned left.' },
-      { name: 'AEK Athens', city: 'Athens, Greece', coords: [38.03, 23.74], category: 'community', region: 'Europe', note: 'Founded by Greek refugees from Constantinople; some supporter groups have anti-fascist traditions.' },
-      { name: 'Celtic F.C.', city: 'Glasgow, Scotland', coords: [55.85, -4.21], category: 'left', region: 'Europe', note: 'Irish immigrant and working-class roots; many supporters identify with republican and socialist politics.' },
-      { name: 'Beşiktaş J.K.', city: 'Istanbul, Turkey', coords: [41.04, 29.00], category: 'left', region: 'Europe / Asia', note: 'The Çarşı supporters group became known internationally for anti-authoritarian activism.' },
-      { name: 'Bohemian F.C.', city: 'Dublin, Ireland', coords: [53.36, -6.28], category: 'left', region: 'Europe', note: 'Often associated with community, anti-racist, and progressive supporter culture.' },
-      { name: 'Napoli', city: 'Naples, Italy', coords: [40.83, 14.19], category: 'people', region: 'Europe', note: 'Often seen as a people’s club with strong working-class and southern Italian identity.' },
-      { name: 'Marseille', city: 'Marseille, France', coords: [43.27, 5.39], category: 'people', region: 'Europe', note: 'Strong port-city, immigrant, working-class, and popular identity.' },
-      { name: 'Borussia Dortmund', city: 'Dortmund, Germany', coords: [51.49, 7.45], category: 'people', region: 'Europe', note: 'Often identified with worker-class Ruhr culture and mass supporter identity.' },
-      { name: 'Liverpool F.C.', city: 'Liverpool, England', coords: [53.43, -2.96], category: 'people', region: 'Europe', note: 'Strong working-class city identity and community symbolism.' },
-      { name: 'Red Star FC', city: 'Saint-Ouen, France', coords: [48.91, 2.33], category: 'left', region: 'France', note: 'Historic working-class Parisian club strongly associated with anti-fascist, anti-racist, and left-wing supporter culture.' },
-      { name: 'Olympique de Marseille', city: 'Marseille, France', coords: [43.27, 5.39], category: 'people', region: 'France', note: 'Popular port-city club associated with immigrant, working-class, and anti-establishment supporter identity.' },
-      { name: 'FC Sankt Pauli Fanclub Paris', city: 'Paris, France', coords: [48.86, 2.35], category: 'left', region: 'France', note: 'Part of wider anti-fascist football supporter networks connected to St. Pauli culture.' },
-      { name: 'Standard de Liège', city: 'Liège, Belgium', coords: [50.61, 5.57], category: 'people', region: 'Belgium', note: 'Historically linked to industrial Walloon working-class identity and strong labor-region culture.' },
-      { name: 'Union Saint-Gilloise', city: 'Brussels, Belgium', coords: [50.82, 4.32], category: 'community', region: 'Belgium', note: 'Community-rooted Brussels club with diverse urban supporter culture and anti-racist tendencies among sections of fans.' },
-      { name: 'RAEC Mons', city: 'Mons, Belgium', coords: [50.45, 3.95], category: 'community', region: 'Belgium', note: 'Historically connected to the mining and labor culture of Wallonia.' },
-
-      { name: 'FC United of Manchester', city: 'Manchester, England', coords: [53.50, -2.20], category: 'fan', region: 'United Kingdom', note: 'Founded by Manchester United supporters opposing corporate ownership after the Glazer takeover.' },
-      { name: 'AFC Wimbledon', city: 'London, England', coords: [51.43, -0.19], category: 'fan', region: 'United Kingdom', note: 'Fan-created after Wimbledon FC’s relocation; major symbol of supporter independence.' },
-      { name: 'Clapton CFC', city: 'London, England', coords: [51.55, 0.03], category: 'left', region: 'United Kingdom', note: 'Explicitly anti-fascist, anti-racist, and community-oriented.' },
-      { name: 'Lewes F.C.', city: 'Lewes, England', coords: [50.87, 0.01], category: 'community', region: 'United Kingdom', note: 'Known globally for equal budgeting between men’s and women’s football.' },
-      { name: 'Merthyr Town F.C.', city: 'Merthyr Tydfil, Wales', coords: [51.75, -3.38], category: 'community', region: 'United Kingdom', note: 'Strong labor and mining-community heritage.' },
-      { name: 'Exeter City F.C.', city: 'Exeter, England', coords: [50.73, -3.52], category: 'fan', region: 'United Kingdom', note: 'Supporter-owned club through its supporters’ trust.' },
-
-      { name: 'San Lorenzo de Almagro', city: 'Buenos Aires, Argentina', coords: [-34.64, -58.44], category: 'community', region: 'Latin America', note: 'Strong social-club tradition and major neighborhood identity.' },
-      { name: 'Argentinos Juniors', city: 'Buenos Aires, Argentina', coords: [-34.61, -58.47], category: 'left', region: 'Latin America', note: 'Historically associated with socialist/anarchist worker movements.' },
-      { name: 'Club Deportivo Palestino', city: 'Santiago, Chile', coords: [-33.47, -70.61], category: 'community', region: 'Latin America', note: 'Associated with Palestinian solidarity and diaspora identity.' },
-      { name: 'Corinthians', city: 'São Paulo, Brazil', coords: [-23.54, -46.47], category: 'left', region: 'Latin America', note: 'Known for the Corinthians Democracy movement in the 1980s under Sócrates, supporting democracy against dictatorship.' },
-
-      { name: 'Real Madrid CF', city: 'Madrid, Spain', coords: [40.45, -3.69], category: 'fan', region: 'Fan-owned', note: 'Member-owned under the socios model, though not generally considered left-wing.' },
-      { name: 'CA Osasuna', city: 'Pamplona, Spain', coords: [42.80, -1.64], category: 'fan', region: 'Fan-owned', note: 'Member-owned club.' },
-      { name: 'FC Bayern Munich', city: 'Munich, Germany', coords: [48.22, 11.62], category: 'fan', region: 'Fan-owned', note: 'Partial member-control structure; not left-wing, but important in fan/member ownership models.' }
-    ];
-
-    const categoryLabels = {
-      left: 'Left / anti-fascist',
-      fan: 'Fan-owned / independent',
-      community: 'Community / social roots',
-      people: 'People’s club identity'
+    const translations = {
+      en: {
+        title: 'Left-Wing / Independent Football Clubs',
+        subtitle: 'A global map of clubs linked to anti-fascism, labor history, community ownership, fan independence, or people’s-club identity.',
+        legendLeft: 'left / anti-fascist',
+        legendFan: 'fan-owned',
+        legendCommunity: 'community',
+        legendPeople: 'people’s club',
+        filterAll: 'All clubs',
+        filterLeft: 'Left / anti-fascist',
+        filterFan: 'Fan-owned',
+        filterCommunity: 'Community',
+        filterPeople: 'People’s clubs',
+        categories: {
+          left: 'Left / anti-fascist',
+          fan: 'Fan-owned / independent',
+          community: 'Community / social roots',
+          people: 'People’s club identity'
+        }
+      },
+      fr: {
+        title: 'Clubs de football de gauche / indépendants',
+        subtitle: 'Une carte mondiale de clubs liés à l’antifascisme, à l’histoire ouvrière, à l’ancrage communautaire, à l’indépendance des supporters ou à l’identité populaire.',
+        legendLeft: 'gauche / antifasciste',
+        legendFan: 'détenu par les fans',
+        legendCommunity: 'communautaire',
+        legendPeople: 'club populaire',
+        filterAll: 'Tous les clubs',
+        filterLeft: 'Gauche / antifasciste',
+        filterFan: 'Détenus par les fans',
+        filterCommunity: 'Communautaires',
+        filterPeople: 'Clubs populaires',
+        categories: {
+          left: 'Gauche / antifasciste',
+          fan: 'Détenu par les fans / indépendant',
+          community: 'Communautaire / racines sociales',
+          people: 'Identité de club populaire'
+        }
+      }
     };
+
+    let currentLang = 'en';
+
+    const clubs = [
+      { name: 'FC St. Pauli', city: 'Hamburg, Germany', coords: [53.55, 9.96], category: 'left', region: 'Europe', note: 'Probably the world’s best-known left-wing football club; associated with anti-fascism, anti-racism, punk culture, LGBTQ+ activism, and grassroots supporter politics.', noteFr: 'Probablement le club de football de gauche le plus connu au monde, associé à l’antifascisme, à l’antiracisme, à la culture punk, aux luttes LGBTQ+ et à la politique de supporters de terrain.' },
+      { name: 'SV Babelsberg 03', city: 'Potsdam, Germany', coords: [52.39, 13.09], category: 'left', region: 'Europe', note: 'Known for a strong anti-fascist supporter scene.', noteFr: 'Connu pour une forte scène de supporters antifascistes.' },
+      { name: 'Union Berlin', city: 'Berlin, Germany', coords: [52.46, 13.57], category: 'community', region: 'Europe', note: 'Deep working-class East Berlin identity; supporters famously helped rebuild the stadium.', noteFr: 'Forte identité ouvrière de Berlin-Est ; les supporters ont notamment aidé à reconstruire le stade.' },
+      { name: 'Rayo Vallecano', city: 'Madrid, Spain', coords: [40.39, -3.66], category: 'left', region: 'Europe', note: 'Associated with the working-class Vallecas district and leftist supporter culture.', noteFr: 'Associé au quartier populaire de Vallecas et à une culture de supporters de gauche.' },
+      { name: 'Athletic Bilbao', city: 'Bilbao, Spain', coords: [43.26, -2.95], category: 'fan', region: 'Europe', note: 'Member-owned club with strong Basque identity and historical regionalist politics.', noteFr: 'Club détenu par ses membres, avec une forte identité basque et une histoire régionaliste.' },
+      { name: 'FC Barcelona', city: 'Barcelona, Spain', coords: [41.38, 2.12], category: 'fan', region: 'Europe', note: 'Member-owned club historically linked to Catalan identity and anti-Franco resistance.', noteFr: 'Club détenu par ses membres, historiquement lié à l’identité catalane et à la résistance antifranquiste.' },
+      { name: 'Livorno', city: 'Livorno, Italy', coords: [43.55, 10.31], category: 'left', region: 'Europe', note: 'Famous for communist and left-wing ultras culture.', noteFr: 'Célèbre pour sa culture ultra communiste et de gauche.' },
+      { name: 'Celtic F.C.', city: 'Glasgow, Scotland', coords: [55.85, -4.21], category: 'left', region: 'Europe', note: 'Irish immigrant and working-class roots; many supporters identify with republican and socialist politics.', noteFr: 'Racines irlandaises immigrées et ouvrières ; de nombreux supporters s’identifient à des idées républicaines et socialistes.' },
+      { name: 'Beşiktaş J.K.', city: 'Istanbul, Turkey', coords: [41.04, 29.00], category: 'left', region: 'Europe / Asia', note: 'The Çarşı supporters group became known internationally for anti-authoritarian activism.', noteFr: 'Le groupe de supporters Çarşı est devenu connu internationalement pour son activisme anti-autoritaire.' },
+      { name: 'Bohemian F.C.', city: 'Dublin, Ireland', coords: [53.36, -6.28], category: 'left', region: 'Europe', note: 'Often associated with community, anti-racist, and progressive supporter culture.', noteFr: 'Souvent associé à une culture de supporters communautaire, antiraciste et progressiste.' },
+      { name: 'Napoli', city: 'Naples, Italy', coords: [40.83, 14.19], category: 'people', region: 'Europe', note: 'Often seen as a people’s club with strong working-class and southern Italian identity.', noteFr: 'Souvent vu comme un club populaire, avec une forte identité ouvrière et sud-italienne.' },
+      { name: 'Marseille', city: 'Marseille, France', coords: [43.27, 5.39], category: 'people', region: 'France', note: 'Popular port-city club associated with immigrant, working-class, and anti-establishment supporter identity.', noteFr: 'Club populaire de ville portuaire, associé à une identité immigrée, ouvrière et anti-establishment.' },
+      { name: 'Borussia Dortmund', city: 'Dortmund, Germany', coords: [51.49, 7.45], category: 'people', region: 'Europe', note: 'Often identified with worker-class Ruhr culture and mass supporter identity.', noteFr: 'Souvent associé à la culture ouvrière de la Ruhr et à une forte identité populaire de supporters.' },
+      { name: 'Liverpool F.C.', city: 'Liverpool, England', coords: [53.43, -2.96], category: 'people', region: 'Europe', note: 'Strong working-class city identity and community symbolism.', noteFr: 'Forte identité urbaine ouvrière et symbolique communautaire.' },
+      { name: 'Red Star FC', city: 'Saint-Ouen, France', coords: [48.91, 2.33], category: 'left', region: 'France', note: 'Historic working-class Parisian club strongly associated with anti-fascist, anti-racist, and left-wing supporter culture.', noteFr: 'Club historique populaire de la banlieue parisienne, fortement associé à l’antifascisme, à l’antiracisme et à une culture de supporters de gauche.' },
+      { name: 'Standard de Liège', city: 'Liège, Belgium', coords: [50.61, 5.57], category: 'people', region: 'Belgium', note: 'Historically linked to industrial Walloon working-class identity and strong labor-region culture.', noteFr: 'Historiquement lié à l’identité ouvrière industrielle wallonne et à une forte culture de région laborieuse.' },
+      { name: 'Union Saint-Gilloise', city: 'Brussels, Belgium', coords: [50.82, 4.32], category: 'community', region: 'Belgium', note: 'Community-rooted Brussels club with diverse urban supporter culture and anti-racist tendencies among sections of fans.', noteFr: 'Club bruxellois ancré localement, avec une culture de supporters urbaine diverse et des tendances antiracistes chez une partie du public.' },
+      { name: 'RAEC Mons', city: 'Mons, Belgium', coords: [50.45, 3.95], category: 'community', region: 'Belgium', note: 'Historically connected to the mining and labor culture of Wallonia.', noteFr: 'Historiquement lié à la culture minière et ouvrière de Wallonie.' },
+      { name: 'FC United of Manchester', city: 'Manchester, England', coords: [53.50, -2.20], category: 'fan', region: 'United Kingdom', note: 'Founded by Manchester United supporters opposing corporate ownership after the Glazer takeover.', noteFr: 'Fondé par des supporters de Manchester United opposés à la propriété corporative après le rachat par les Glazer.' },
+      { name: 'AFC Wimbledon', city: 'London, England', coords: [51.43, -0.19], category: 'fan', region: 'United Kingdom', note: 'Fan-created after Wimbledon FC’s relocation; major symbol of supporter independence.', noteFr: 'Créé par les supporters après le déplacement de Wimbledon FC ; symbole majeur de l’indépendance des supporters.' },
+      { name: 'Clapton CFC', city: 'London, England', coords: [51.55, 0.03], category: 'left', region: 'United Kingdom', note: 'Explicitly anti-fascist, anti-racist, and community-oriented.', noteFr: 'Explicitement antifasciste, antiraciste et orienté vers la communauté.' },
+      { name: 'Lewes F.C.', city: 'Lewes, England', coords: [50.87, 0.01], category: 'community', region: 'United Kingdom', note: 'Known globally for equal budgeting between men’s and women’s football.', noteFr: 'Connu mondialement pour l’égalité budgétaire entre le football masculin et féminin.' },
+      { name: 'Merthyr Town F.C.', city: 'Merthyr Tydfil, Wales', coords: [51.75, -3.38], category: 'community', region: 'United Kingdom', note: 'Strong labor and mining-community heritage.', noteFr: 'Fort héritage ouvrier et minier.' },
+      { name: 'Exeter City F.C.', city: 'Exeter, England', coords: [50.73, -3.52], category: 'fan', region: 'United Kingdom', note: 'Supporter-owned club through its supporters’ trust.', noteFr: 'Club détenu par les supporters via leur trust.' },
+      { name: 'San Lorenzo de Almagro', city: 'Buenos Aires, Argentina', coords: [-34.64, -58.44], category: 'community', region: 'Latin America', note: 'Strong social-club tradition and major neighborhood identity.', noteFr: 'Forte tradition de club social et grande identité de quartier.' },
+      { name: 'Argentinos Juniors', city: 'Buenos Aires, Argentina', coords: [-34.61, -58.47], category: 'left', region: 'Latin America', note: 'Historically associated with socialist/anarchist worker movements.', noteFr: 'Historiquement associé à des mouvements ouvriers socialistes et anarchistes.' },
+      { name: 'Club Deportivo Palestino', city: 'Santiago, Chile', coords: [-33.47, -70.61], category: 'community', region: 'Latin America', note: 'Associated with Palestinian solidarity and diaspora identity.', noteFr: 'Associé à la solidarité avec la Palestine et à l’identité diasporique.' },
+      { name: 'Corinthians', city: 'São Paulo, Brazil', coords: [-23.54, -46.47], category: 'left', region: 'Latin America', note: 'Known for the Corinthians Democracy movement in the 1980s under Sócrates, supporting democracy against dictatorship.', noteFr: 'Connu pour le mouvement Democracia Corinthiana des années 1980 autour de Sócrates, en soutien à la démocratie contre la dictature.' },
+      { name: 'Real Madrid CF', city: 'Madrid, Spain', coords: [40.45, -3.69], category: 'fan', region: 'Fan-owned', note: 'Member-owned under the socios model, though not generally considered left-wing.', noteFr: 'Détenu par ses membres selon le modèle des socios, même s’il n’est généralement pas considéré comme un club de gauche.' },
+      { name: 'CA Osasuna', city: 'Pamplona, Spain', coords: [42.80, -1.64], category: 'fan', region: 'Fan-owned', note: 'Member-owned club.', noteFr: 'Club détenu par ses membres.' },
+      { name: 'FC Bayern Munich', city: 'Munich, Germany', coords: [48.22, 11.62], category: 'fan', region: 'Fan-owned', note: 'Partial member-control structure; not left-wing, but important in fan/member ownership models.', noteFr: 'Structure de contrôle partiel par les membres ; pas un club de gauche, mais important dans les modèles de propriété par les membres.' }
+    ];
 
     const map = L.map('map', {
       zoomControl: false,
@@ -445,7 +500,7 @@
     const filters = document.getElementById('filters');
     const markers = [];
     let hoverLabel = null;
-    let activeCategory = 'all';
+    let activeClub = null;
 
     function escapeHtml(value) {
       return String(value)
@@ -460,12 +515,18 @@
       return ['left', 'fan', 'community', 'people'].includes(category) ? category : 'community';
     }
 
+    function translatedNote(club) {
+      return currentLang === 'fr' && club.noteFr ? club.noteFr : club.note;
+    }
+
     function renderCard(club) {
+      activeClub = club;
+      const labels = translations[currentLang].categories;
       card.innerHTML = `
-        <span class="tag">${escapeHtml(categoryLabels[club.category] || club.category)}</span>
+        <span class="tag">${escapeHtml(labels[club.category] || club.category)}</span>
         <h2 class="club-title">${escapeHtml(club.name)}</h2>
         <p class="location">${escapeHtml(club.city)} · ${escapeHtml(club.region)}</p>
-        <p class="description">${escapeHtml(club.note)}</p>
+        <p class="description">${escapeHtml(translatedNote(club))}</p>
       `;
     }
 
@@ -486,10 +547,11 @@
 
     function showHover(club) {
       clearHover();
+      const labels = translations[currentLang].categories;
       hoverLabel = L.marker(club.coords, {
         icon: L.divIcon({
           className: '',
-          html: `<div class="hover-preview"><strong>${escapeHtml(club.name)}</strong><span>${escapeHtml(categoryLabels[club.category] || club.category)}</span><span>${escapeHtml(club.city)}</span></div>`,
+          html: `<div class="hover-preview"><strong>${escapeHtml(club.name)}</strong><span>${escapeHtml(labels[club.category] || club.category)}</span><span>${escapeHtml(club.city)}</span></div>`,
           iconSize: [220, 86],
           iconAnchor: [110, 98]
         }),
@@ -505,7 +567,6 @@
     }
 
     function applyFilter(category) {
-      activeCategory = category;
       filters.querySelectorAll('button').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.filter === category);
       });
@@ -546,7 +607,6 @@
       const marker = L.marker(club.coords, { icon }).addTo(map);
       const label = L.marker(club.coords, { icon: labelIcon, interactive: false }).addTo(map);
 
-      marker.bindPopup(`<strong>${escapeHtml(club.name)}</strong><br>${escapeHtml(club.city)}<br>${escapeHtml(categoryLabels[club.category] || club.category)}`);
       marker.on('click', () => selectClub(club, marker));
 
       if (!isMobile) {
@@ -557,7 +617,43 @@
       markers.push({ club, marker, label });
     }
 
-    clubs.forEach(createMarker);
+    function updatePopups() {
+      const labels = translations[currentLang].categories;
+      markers.forEach(({ club, marker }) => {
+        marker.bindPopup(`<strong>${escapeHtml(club.name)}</strong><br>${escapeHtml(club.city)}<br>${escapeHtml(labels[club.category] || club.category)}`);
+      });
+    }
+
+    function updateLanguage(lang) {
+      currentLang = lang;
+      const dict = translations[currentLang];
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (dict[key]) el.textContent = dict[key];
+      });
+
+      const switchEl = document.getElementById('langToggle');
+      switchEl.classList.toggle('active', currentLang === 'fr');
+      switchEl.setAttribute('aria-checked', currentLang === 'fr' ? 'true' : 'false');
+
+      updatePopups();
+      renderCard(activeClub || clubs[0]);
+    }
+
+    const langSwitch = document.getElementById('langToggle');
+
+    function toggleLanguage() {
+      updateLanguage(currentLang === 'en' ? 'fr' : 'en');
+    }
+
+    langSwitch.addEventListener('click', toggleLanguage);
+    langSwitch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleLanguage();
+      }
+    });
 
     filters.addEventListener('click', (event) => {
       const btn = event.target.closest('button[data-filter]');
@@ -575,8 +671,9 @@
       console.groupEnd();
     }
 
+    clubs.forEach(createMarker);
     runDataTests();
-    renderCard(clubs[0]);
+    updateLanguage('en');
     applyFilter('all');
   </script>
 </body>
